@@ -44,8 +44,8 @@ const WeatherMap = ({ zoom, dark }) => {
     [setMapPosition]
   );
 
-  const [mapTimestamps, setMapTimestamps] = useState(null);
-  const [mapTimestamp, setMapTimestamp] = useState(null);
+  const [mapTileUrls, setMapTileUrls] = useState(null);
+  const [mapTileUrl, setMapTileUrl] = useState(null);
   const [currentMapTimestampIdx, setCurrentMapTimestampIdx] = useState(0);
 
   const MAP_TIMESTAMP_REFRESH_FREQUENCY = 1000 * 60 * 10; //update every 10 minutes
@@ -61,9 +61,9 @@ const WeatherMap = ({ zoom, dark }) => {
     });
 
     const updateTimeStamps = () => {
-      getMapTimestamps()
+      getMapTileUrls()
         .then((res) => {
-          setMapTimestamps(res);
+          setMapTileUrls(res);
         })
         .catch((err) => {
           console.log("err", err);
@@ -92,18 +92,18 @@ const WeatherMap = ({ zoom, dark }) => {
   const { latitude, longitude } = browserGeo || {};
 
   useEffect(() => {
-    if (mapTimestamps) {
-      setMapTimestamp(mapTimestamps[currentMapTimestampIdx]);
+    if (mapTileUrls && mapTileUrls.length > 0) {
+      setMapTileUrl(mapTileUrls[currentMapTimestampIdx]);
     }
-  }, [currentMapTimestampIdx, mapTimestamps]);
+  }, [currentMapTimestampIdx, mapTileUrls]);
 
   // cycle through weather maps when animated is enabled
   useEffect(() => {
-    if (mapTimestamps) {
+    if (mapTileUrls && mapTileUrls.length > 0) {
       if (animateWeatherMap) {
         const interval = setInterval(() => {
           let nextIdx;
-          if (currentMapTimestampIdx + 1 >= mapTimestamps.length) {
+          if (currentMapTimestampIdx + 1 >= mapTileUrls.length) {
             nextIdx = 0;
           } else {
             nextIdx = currentMapTimestampIdx + 1;
@@ -114,10 +114,10 @@ const WeatherMap = ({ zoom, dark }) => {
           clearInterval(interval);
         };
       } else {
-        setCurrentMapTimestampIdx(mapTimestamps.length - 1);
+        setCurrentMapTimestampIdx(mapTileUrls.length - 1);
       }
     }
-  }, [currentMapTimestampIdx, animateWeatherMap, mapTimestamps]);
+  }, [currentMapTimestampIdx, animateWeatherMap, mapTileUrls]);
 
   if (!hasVal(latitude) || !hasVal(longitude) || !zoom || !mapApiKey) {
     return (
@@ -149,15 +149,12 @@ const WeatherMap = ({ zoom, dark }) => {
         }/tiles/{z}/{x}/{y}?access_token={apiKey}`}
         apiKey={mapApiKey}
       />
-      {mapTimestamp ? (
+      {mapTileUrl ? (
         <TileLayer
           attribution='<a href="https://www.rainviewer.com/">RainViewer</a>'
-          url={`https://tilecache.rainviewer.com/v2/radar/${mapTimestamp}/{size}/{z}/{x}/{y}/{color}/{smooth}_{snow}.png`}
+          url={mapTileUrl}
           opacity={0.3}
-          size={512}
-          color={6} // https://www.rainviewer.com/api.html#colorSchemes
-          smooth={1}
-          snow={1}
+          maxNativeZoom={7}
         />
       ) : null}
       {markerIsVisible && markerPosition ? (
@@ -206,16 +203,23 @@ function hasVal(i) {
 }
 
 /**
- * Get timestamps for weather map
+ * Get tile URLs for weather map
  *
- * @returns {Promise} Promise of timestamps
+ * @returns {Promise} Promise of tile URLs
  */
-function getMapTimestamps() {
+function getMapTileUrls() {
   return new Promise((resolve, reject) => {
     axios
-      .get("https://api.rainviewer.com/public/maps.json")
+      .get("https://api.rainviewer.com/public/weather-maps.json")
       .then((res) => {
-        resolve(res.data);
+        const {
+          host,
+          radar: { past = [] } = {},
+        } = res.data || {};
+        const tileUrls = past.map((frame) => {
+          return `${host}${frame.path}/512/{z}/{x}/{y}/2/1_1.png`;
+        });
+        resolve(tileUrls);
       })
       .catch((err) => {
         reject(err);
