@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --progress --watch --mode development",
-    "prod": "webpack -p --env.BUILD_PRODUCTION=1"
+    "prod": "NODE_OPTIONS=--openssl-legacy-provider webpack -p --env.BUILD_PRODUCTION=1"
   },
   "author": "Eric Lewin",
   "license": "MIT",
