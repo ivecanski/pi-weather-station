@@ -1,6 +1,19 @@
 
 # Pi Weather Station
 
+A fork of a great project, which I made to address some issues that have appeared with 3rd party APIs after the original maintainer last worked on the project. It also contains some minor adjustments I made for my own setup. Issues addressed are:
+
+- Switch from data.climacell.co to api.tomorrow.io for weather data (June 2025), after the weather data stopped displaying in the right side bar
+
+- Fixed problem with RainViewer data no longer appearing on map, caused by RainViewer changing their API limits on January 1, 2026
+
+- Commented out the chromium invocation in server/index.js, so that chromium is not started with "npm start" ("npm start" will invoke server/index.js). The reason is that this way I can't start it in fullscreen or kiosk mode
+
+- Fix client dependencies: had to include `NODE_OPTIONS=--openssl-legacy-provider`
+
+
+# Original README.md (forked at v2.0.0)
+
 This is a weather station designed to be used with a Raspberry Pi on the official 7" 800x480 touchscreen.
 
 ![pws-screenshot3](https://user-images.githubusercontent.com/15202038/91359998-4625bb80-e7bb-11ea-937e-c87eede41f35.JPG)
@@ -15,11 +28,11 @@ See it in action [here](https://www.youtube.com/watch?v=dvM6cyqYSw8).
 
 > Be mindful of the plan limits for your API keys and understand the terms of each provider, as scrolling around the map and selecting different locations will incur API calls for every location. Additionally, the weather station will periodically make additional api calls to get weather updates throughout the day.
 
-# v2.0.0
+## v2.0.0
 
 1-22-2021: Now uses [ClimaCell](https://www.climacell.co/) API v4. For ClimaCell API v3 keys, use [Pi Weather Station v1](https://github.com/elewin/pi-weather-station/releases/tag/v1.0).
 
-# Setup
+## Setup
 
 > You will need to have [Node.js](https://nodejs.org/) installed.
 
@@ -33,7 +46,7 @@ Start the server with
 
 Now set point your browser to `http://localhost:8080` and put it in full screen mode (`F11` in Chromium).
 
-## Access from another machine
+### Access from another machine
 
 It's possible to access the app from another machine, but beware that by doing so you'll be exposing the app to your entire network, and someone else could potentially access the app and retreive your API keys from the settings page. By default the app is only accessible to `localhost`, but if you would like to open it up to your network (at your own risk!), open `/server/index.js` and remove `"localhost"` from the line that contains:
 
@@ -49,17 +62,17 @@ app.listen(PORT, async () => {
 
 The server will now serve the app across your network.
 
-# Settings
+## Settings
 
 - Your API keys are saved locally (in plain text) to `settings.json`.
 - The server will attempt to get your default location, but if it cannot or you wish to choose a different default location, enter the latitude and longitude under `Custom Latitude` and `Custom Longitude` in settings, which can be accessed by tapping the gear button in the lower right hand corner.
 - To hide the mouse cursor when using a touch screen, set `Hide Mouse` to `On`.
 
-# Do you want to Host this Application in Docker?
+## Do you want to Host this Application in Docker?
 
 Pi Weather Station is available as a Docker Image for AMD64 and ARM infrastructures. see the *ReadME* here for more: https://github.com/SeanRiggs/pi-weather-station/blob/master/Docker%20Image/Docker-ReadMe.md
 
-# License
+## License
 
 The MIT License (MIT)
 
